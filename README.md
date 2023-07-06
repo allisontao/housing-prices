@@ -2,6 +2,7 @@
 Requirements:
 
 ``pip install -q streamlit``
+
 ``npm install localtunnel``
 
 To run frontend:
