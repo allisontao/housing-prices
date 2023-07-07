@@ -20,18 +20,19 @@ def main():
     TotRmsAbvGrd = st.sidebar.number_input('TotRmsAbvGrd', step=1) 
     FullBath = st.sidebar.number_input('FullBath', step=1) 
     BsmtFullBath = st.sidebar.number_input('BsmtFullBath', step=1)  
-    YearBuilt = st.sidebar.text_input('YearBuilt')
+    YearBuilt = st.sidebar.number_input('YearBuilt', min_value= 1500, max_value=2023, value= 2010, step=1)
     ThreeSsnPorch = st.sidebar.text_input('3SsnPorch')
     ScreenPorch = st.sidebar.text_input('ScreenPorch',)
     LowQualFinSF = st.sidebar.text_input('LowQualFinSF')
-    YearRemodAdd = st.sidebar.text_input('YearRemodAdd')
+    YearRemodAdd = st.sidebar.number_input('YearRemodAdd', min_value= 1500, max_value=2023, value= 2010, step=1) 
     GarageArea = st.sidebar.text_input('GarageArea')
     EnclosedPorch = st.sidebar.text_input('EnclosedPorch')
     FirstFlrSF = st.sidebar.text_input('1stFlrSF')
     SecondFlrSF = st.sidebar.text_input('2ndFlrSF')
     GarageCars = st.sidebar.number_input('GarageCars', step=1)
     
-    submit_button = st.form_submit_button(label='Enter')
+    text = st.markdown("Press submit button below after inputting house data on the left")
+    submit_button = st.form_submit_button(label='Submit')
 
     if submit_button:
       user_data = {
