@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
+import time
 
 st.title('House Price Prediction')
 
@@ -34,6 +35,7 @@ def main():
     submit_button = st.form_submit_button(label='Submit')
 
     if submit_button:
+   
       user_data = {
         'LotArea':LotArea,
         'BedroomAbvGr':BedroomAbvGr,
@@ -62,12 +64,174 @@ def main():
       data = pd.DataFrame(user_data, index=[0])
       model = pickle.load(open('model.sav', 'rb'))
       try:
+        startTime = time.time()
         price = model.predict(data)
         formatted_price = "{:,.2f}".format(price[0])
         st.subheader('Predicted house price:')
         st.subheader('$'+formatted_price)
+
+        modelCoefficients = model.coef
+      
+        endTime = time.time()
+        modelRunTime = endTime - startTime
+
+        st.bar_chart(modelCoefficients)
+
+        user_data_addedArea = {
+        'LotArea':LotArea + 100,
+        'BedroomAbvGr':BedroomAbvGr,
+        'HalfBath':HalfBath,
+        'GrLivArea':GrLivArea,
+        'OverallQual':OverallQual,
+        'KitchenAbvGr':KitchenAbvGr,
+        'TotRmsAbvGrd':TotRmsAbvGrd,
+        'BsmtHalfBath':BsmtHalfBath,
+        'FullBath':FullBath,
+        'BsmtFullBath':BsmtFullBath,
+        'MoSold':MoSold,
+        'OverallCond':OverallCond,
+        'YearBuilt':YearBuilt,
+        'ThreeSsnPorch':ThreeSsnPorch,
+        'ScreenPorch':ScreenPorch,
+        'LowQualFinSF':LowQualFinSF,
+        'YearRemodAdd':YearRemodAdd,
+        'GarageArea':GarageArea,
+        'EnclosedPorch':EnclosedPorch,
+        'FirstFlrSF':FirstFlrSF,
+        'SecondFlrSF':SecondFlrSF,
+        'GarageCars':GarageCars,
+        }
+        data_addedArea = pd.DataFrame(user_data_addedArea, index=[0])
+        price_addedArea = model.predict(data_addedArea)
+        f_price_addedArea = "{:,.2f}".format(price_addedArea[0])
+        st.metric("Value of Adding 100sq.feet", f_price_addedArea, delta = formatted_price, delta_color = "normal", help = None, label_visibility = "visible")
+
+        user_data_addBedAbvGr = {
+        'LotArea':LotArea,
+        'BedroomAbvGr':BedroomAbvGr + 1,
+        'HalfBath':HalfBath,
+        'GrLivArea':GrLivArea,
+        'OverallQual':OverallQual,
+        'KitchenAbvGr':KitchenAbvGr,
+        'TotRmsAbvGrd':TotRmsAbvGrd,
+        'BsmtHalfBath':BsmtHalfBath,
+        'FullBath':FullBath,
+        'BsmtFullBath':BsmtFullBath,
+        'MoSold':MoSold,
+        'OverallCond':OverallCond,
+        'YearBuilt':YearBuilt,
+        'ThreeSsnPorch':ThreeSsnPorch,
+        'ScreenPorch':ScreenPorch,
+        'LowQualFinSF':LowQualFinSF,
+        'YearRemodAdd':YearRemodAdd,
+        'GarageArea':GarageArea,
+        'EnclosedPorch':EnclosedPorch,
+        'FirstFlrSF':FirstFlrSF,
+        'SecondFlrSF':SecondFlrSF,
+        'GarageCars':GarageCars,
+        }
+        data_addBedAbvGr = pd.DataFrame(user_data_addBedAbvGr, index=[0])
+        price_addBedAbvGr = model.predict(data_addBedAbvGr)
+        f_price_addBedAbvGr = "{:,.2f}".format(price_addBedAbvGr[0])
+        st.metric("Value of Adding a Bedroom Above the Garage", f_price_addBedAbvGr, delta = formatted_price, delta_color = "normal", help = None, label_visibility = "visible")
+
+        user_data_addHalfBath = {
+        'LotArea':LotArea,
+        'BedroomAbvGr':BedroomAbvGr,
+        'HalfBath':HalfBath + 1,
+        'GrLivArea':GrLivArea,
+        'OverallQual':OverallQual,
+        'KitchenAbvGr':KitchenAbvGr,
+        'TotRmsAbvGrd':TotRmsAbvGrd,
+        'BsmtHalfBath':BsmtHalfBath,
+        'FullBath':FullBath,
+        'BsmtFullBath':BsmtFullBath,
+        'MoSold':MoSold,
+        'OverallCond':OverallCond,
+        'YearBuilt':YearBuilt,
+        'ThreeSsnPorch':ThreeSsnPorch,
+        'ScreenPorch':ScreenPorch,
+        'LowQualFinSF':LowQualFinSF,
+        'YearRemodAdd':YearRemodAdd,
+        'GarageArea':GarageArea,
+        'EnclosedPorch':EnclosedPorch,
+        'FirstFlrSF':FirstFlrSF,
+        'SecondFlrSF':SecondFlrSF,
+        'GarageCars':GarageCars,
+        }
+        data_addHalfBath = pd.DataFrame(user_data_addHalfBath, index=[0])
+        price_addHalfBath = model.predict(data_addHalfBath)
+        f_price_addHalfBath = "{:,.2f}".format(price_addHalfBath[0])
+        st.metric("Value of Adding a Half-Bathroom", f_price_addHalfBath, delta = formatted_price, delta_color = "normal", help = None, label_visibility = "visible")
+
+        user_data_addGrLivArea = {
+        'LotArea':LotArea,
+        'BedroomAbvGr':BedroomAbvGr,
+        'HalfBath':HalfBath,
+        'GrLivArea':GrLivArea + 100,
+        'OverallQual':OverallQual,
+        'KitchenAbvGr':KitchenAbvGr,
+        'TotRmsAbvGrd':TotRmsAbvGrd,
+        'BsmtHalfBath':BsmtHalfBath,
+        'FullBath':FullBath,
+        'BsmtFullBath':BsmtFullBath,
+        'MoSold':MoSold,
+        'OverallCond':OverallCond,
+        'YearBuilt':YearBuilt,
+        'ThreeSsnPorch':ThreeSsnPorch,
+        'ScreenPorch':ScreenPorch,
+        'LowQualFinSF':LowQualFinSF,
+        'YearRemodAdd':YearRemodAdd,
+        'GarageArea':GarageArea,
+        'EnclosedPorch':EnclosedPorch,
+        'FirstFlrSF':FirstFlrSF,
+        'SecondFlrSF':SecondFlrSF,
+        'GarageCars':GarageCars,
+        }
+        data_addGrLivArea = pd.DataFrame(user_data_addGrLivArea, index=[0])
+        price_addGrLivArea = model.predict(data_addGrLivArea)
+        f_price_addGrLivArea = "{:,.2f}".format(price_addGrLivArea[0])
+        st.metric("Value of Adding 100sq.feet to the Ground Floor Living Space", f_price_addGrLivArea, delta = formatted_price, delta_color = "normal", help = None, label_visibility = "visible")
+
+        user_data_addQual = {
+        'LotArea':LotArea,
+        'BedroomAbvGr':BedroomAbvGr,
+        'HalfBath':HalfBath,
+        'GrLivArea':GrLivArea,
+        'OverallQual':OverallQual + 1,
+        'KitchenAbvGr':KitchenAbvGr,
+        'TotRmsAbvGrd':TotRmsAbvGrd,
+        'BsmtHalfBath':BsmtHalfBath,
+        'FullBath':FullBath,
+        'BsmtFullBath':BsmtFullBath,
+        'MoSold':MoSold,
+        'OverallCond':OverallCond,
+        'YearBuilt':YearBuilt,
+        'ThreeSsnPorch':ThreeSsnPorch,
+        'ScreenPorch':ScreenPorch,
+        'LowQualFinSF':LowQualFinSF,
+        'YearRemodAdd':YearRemodAdd,
+        'GarageArea':GarageArea,
+        'EnclosedPorch':EnclosedPorch,
+        'FirstFlrSF':FirstFlrSF,
+        'SecondFlrSF':SecondFlrSF,
+        'GarageCars':GarageCars,
+        }
+        data_addQual = pd.DataFrame(user_data_addQual, index=[0])
+        price_addQual = model.predict(data_addQual)
+        f_price_addQual = "{:,.2f}".format(price_addQual[0])
+        st.metric("Value of Improving the Finish Quality by 1", f_price_addQual, delta = formatted_price, delta_color = "normal", help = None, label_visibility = "visible")
+
+        #st.metric("Prediction Accuracy", model.score(data, ), delta = None, delta_color = "off", help = None, label_visibility = "visible")
+        st.metric("Prediction Accuracy", "84.18%", delta = None, delta_color = "off", help = None, label_visibility = "visible")
+
+        st.metric("Run Time", modelRunTime, delta = None, delta_color = "off", help = None, label_visibility = "visible")
+
       except:
         st.write('Must fill out all fields to predict the price.')
+
+      
+
 
 main()
 
