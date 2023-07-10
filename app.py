@@ -71,9 +71,6 @@ def main():
         st.subheader('$'+formatted_price)
 
         modelCoefficients = model.coef
-      
-        endTime = time.time()
-        modelRunTime = endTime - startTime
 
         st.bar_chart(modelCoefficients)
 
@@ -225,6 +222,8 @@ def main():
         #st.metric("Prediction Accuracy", model.score(data, ), delta = None, delta_color = "off", help = None, label_visibility = "visible")
         st.metric("Prediction Accuracy", "84.18%", delta = None, delta_color = "off", help = None, label_visibility = "visible")
 
+        endTime = time.time()
+        modelRunTime = endTime - startTime
         st.metric("Run Time", modelRunTime, delta = None, delta_color = "off", help = None, label_visibility = "visible")
 
       except:
