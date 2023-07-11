@@ -84,12 +84,19 @@ def main():
 
             data = pd.DataFrame(user_data, index=[0])
             model = pickle.load(open('model.sav', 'rb'))
+            raw_data = pickle.load(open('df.pkl', 'rb'))
             # try:
-            # startTime = time.time()
+            startTime = time.time()
             price = model.predict(data)
             formatted_price = "{:,.2f}".format(price[0])
-            st.subheader('Predicted house price:')
-            st.subheader('$'+formatted_price)
+
+            col1, col2 = st.columns(2)
+            col1.metric("Predicted house price:", '$'+formatted_price, delta=None, delta_color="off",
+                        help=None, label_visibility="visible")
+
+            col2.metric("Prediction Accuracy", "83.78%", delta=None, delta_color="off",
+                        help=None, label_visibility="visible")  # hard coded accuracy
+
             modelCoefficients = model.coef_
             print(modelCoefficients)
             column_names = ['OverallQual', 'BsmtFullBath', 'GarageCars', 'BedroomAbvGr', 'BsmtHalfBath',
@@ -116,27 +123,27 @@ def main():
             # Sort the DataFrame by 'AbsCoefficients' in descending order
             df = df.sort_values('AbsCoefficients', ascending=False)
 
+            # Feature Bar Chart Title
+            st.markdown(
+                "##### Scaled Impact of Features on Price Prediction")
+
             # Create a bar chart with 'Features' on the x-axis and 'Coefficients' on the y-axis
             st.bar_chart(df.set_index('Features')['Coefficients'])
 
-            # Feature Bar Chart Title
+            # Get the top 5 features
+            top_5_features = df['Features'].values[:5]
+
+            # Calculate the correlation matrix of the top 5 features
+            corr_matrix = raw_data[top_5_features].corr()
+
+            # Heatmap Title
             st.markdown(
-                "#### Scaled Impact of Features on Price Prediction")
+                "##### Heatmap of Correlation Between Top 5 Features")
 
-            # Compute the correlation matrix from the coefficients DataFrame
-            # corr = coef_df.corr()
-           # print(corr)
-
-            # Create a heatmap
-            # st.header(
-            #     'Correlation Heatmap of Linear Regression Coefficients')
-            # fig, ax = plt.subplots()
-            # sns.heatmap(corr, annot=True, fmt=".2f",
-            #             cmap='coolwarm', ax=ax)
-            # st.pyplot(fig)
-
-            st.metric("Prediction Accuracy", "83.78%", delta=None, delta_color="off",
-                      help=None, label_visibility="visible")  # hard coded accuracy
+            # Create a heatmap of the correlation matrix
+            plt.figure(figsize=(10, 8))
+            sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
+            st.pyplot(plt)
 
             def create_metric(modified_data, original_price):
                 data = pd.DataFrame(modified_data, index=[0])
@@ -437,11 +444,16 @@ def main():
             col_10.metric("Predicted Decrease in Value of Decreasing Basement Full Baths by 1", subtract_BsmtFullBath_price,
                           delta=subtract_BsmtFullBath_change, delta_color="normal", help=None, label_visibility="visible")
 
-            # endTime = time.time()
-            # modelRunTime = endTime - startTime
-            # st.metric("Run Time", modelRunTime, delta = None, delta_color = "off", help = None, label_visibility = "visible") #model run time
-            # except:
-            #     st.write('Must fill out all fields to predict the price.')
+            endTime = time.time()
+            modelRunTime = endTime - startTime
+            modelRunTime = round(modelRunTime, 2)
+
+            st.metric("Run Time:", str(modelRunTime) + ' seconds', delta=None, delta_color="off",
+                      help=None, label_visibility="visible")  # model run time
+
+
+# except:
+#     st.write('Must fill out all fields to predict the price.')
 
 
 main()
