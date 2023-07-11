@@ -135,7 +135,7 @@ def main():
             #             cmap='coolwarm', ax=ax)
             # st.pyplot(fig)
 
-            st.metric("Prediction Accuracy", "83.31%", delta=None, delta_color="off",
+            st.metric("Prediction Accuracy", "83.78%", delta=None, delta_color="off",
                       help=None, label_visibility="visible")  # hard coded accuracy
 
             def create_metric(modified_data, original_price):
