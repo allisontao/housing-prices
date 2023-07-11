@@ -35,26 +35,26 @@ def main():
     if submit_button:
    
       user_data = {
-        'BedroomAbvGr':BedroomAbvGr,
-        'HalfBath':HalfBath,
-        'GrLivArea':GrLivArea,
-        'OverallQual':OverallQual,
-        'KitchenAbvGr':KitchenAbvGr,
-        'TotRmsAbvGrd':TotRmsAbvGrd,
-        'BsmtHalfBath':BsmtHalfBath,
-        'FullBath':FullBath,
-        'BsmtFullBath':BsmtFullBath,
-        'MoSold':MoSold,
-        'OverallCond':OverallCond,
-        'YearBuilt':YearBuilt,
-        'ScreenPorch':ScreenPorch,
-        'YearRemodAdd':YearRemodAdd,
-        'GarageCars':GarageCars,
-        'YrSold':YrSold,
-        'MSSubClass':MSSubClass,
-        'MasVnrArea':MasVnrArea,
-        'PoolArea':PoolArea,
-        'Fireplaces':Fireplaces
+      'OverallQual':OverallQual, 
+      'GarageCars':GarageCars, 
+      'KitchenAbvGr':KitchenAbvGr, 
+      'BedroomAbvGr':BedroomAbvGr,
+      'BsmtFullBath':BsmtFullBath, 
+      'OverallCond':OverallCond, 
+      'TotRmsAbvGrd':TotRmsAbvGrd, 
+      'Fireplaces':Fireplaces, 
+      'FullBath':FullBath, 
+      'HalfBath':HalfBath, 
+      'BsmtHalfBath':BsmtHalfBath, 
+      'YrSold':YrSold, 
+      'YearBuilt':YearBuilt, 
+      'MSSubClass':MSSubClass,
+      'YearRemodAdd':YearRemodAdd, 
+      'ScreenPorch':ScreenPorch, 
+      'MoSold':MoSold, 
+      'PoolArea':PoolArea, 
+      'GrLivArea':GrLivArea,
+      'MasVnrArea':MasVnrArea
       }
 
       data = pd.DataFrame(user_data, index=[0])
