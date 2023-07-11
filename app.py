@@ -60,36 +60,38 @@ def main():
       data = pd.DataFrame(user_data, index=[0])
       model = pickle.load(open('model.sav', 'rb'))
       try:
+        #startTime = time.time()
         price = model.predict(data)
         formatted_price = "{:,.2f}".format(price[0])
         st.subheader('Predicted house price:')
         st.subheader('$'+formatted_price)
-      except:
-        st.write('Must fill out all fields to predict the price.')
+        modelCoefficients = model.coef_
+        print(modelCoefficients)
+        column_names = ['OverallQual', 'GarageCars', 'KitchenAbvGr', 'BedroomAbvGr',
+        'BsmtFullBath', 'OverallCond', 'TotRmsAbvGrd', 'Fireplaces', 
+        'FullBath', 'HalfBath', 'BsmtHalfBath', 'YrSold', 'YearBuilt', 
+        'MSSubClass','YearRemodAdd', 'ScreenPorch', 'MoSold', 
+        'PoolArea', 'GrLivArea','MasVnrArea']
+        # Create a pandas DataFrame with your data
+        coef_df = pd.DataFrame({
+            'Features': column_names,
+            'Coefficients': modelCoefficients
+        })
 
-        # modelCoefficients = model.coef_
-        # print(modelCoefficients)
-        # column_names = ['LotArea', 'BedroomAbvGr', 'HalfBath', 'GrLivArea', 'OverallQual', 'KitchenAbvGr',
-        #         'TotRmsAbvGrd', 'BsmtHalfBath', 'FullBath', 'BsmtFullBath', 'MoSold', 'OverallCond',
-        #         'YearBuilt', '3SsnPorch', 'ScreenPorch', 'LowQualFinSF', 'YearRemodAdd', 'GarageArea',
-        #         'EnclosedPorch', '1stFlrSF', '2ndFlrSF', 'GarageCars']
-        # # Create a pandas DataFrame with your data
-        # coef_df = pd.DataFrame({
-        #     'Features': column_names,
-        #     'Coefficients': modelCoefficients
-        # })
+        # Set 'Features' as index
+        coef_df = coef_df.set_index('Features')
 
-        # # Set 'Features' as index
-        # coef_df = coef_df.set_index('Features')
+        # Convert index to CategoricalIndex with categories in original order
+        coef_df.index = pd.CategoricalIndex(coef_df.index, categories=column_names, ordered=True)
 
-        # # Convert index to CategoricalIndex with categories in original order
-        # coef_df.index = pd.CategoricalIndex(coef_df.index, categories=column_names, ordered=True)
-
-        # # Sort index according to the category order specified
-        # coef_df = coef_df.sort_index()
-
-        # # Use DataFrame in Streamlit
-        # st.bar_chart(coef_df)
+        # Sort index according to the category order specified
+        coef_df = coef_df.sort_index()
+        
+        #Feature Bar Chart Title
+        st.markdown("#### Scaled Impact of Features on Price Prediction")
+       
+        # Use DataFrame in Streamlit
+        st.bar_chart(coef_df)
 
       
         # user_data_addedArea = { #taking user lot area parameter and adding 100 sqft, comparing new prediction with based prediction to see effect
@@ -208,40 +210,43 @@ def main():
         # f_price_addGrLivArea = "{:,.2f}".format(price_addGrLivArea[0])
         # st.metric("Value of Adding 100sq.feet to the Ground Floor Living Space", f_price_addGrLivArea, delta = formatted_price, delta_color = "normal", help = None, label_visibility = "visible")
 
-        # user_data_GarageYrBlt = {
-        # 'LotArea':LotArea,
-        # 'BedroomAbvGr':BedroomAbvGr,
-        # 'HalfBath':HalfBath,
-        # 'GrLivArea':GrLivArea,
-        # 'OverallQual':OverallQual + 1,
-        # 'KitchenAbvGr':KitchenAbvGr,
-        # 'TotRmsAbvGrd':TotRmsAbvGrd,
-        # 'BsmtHalfBath':BsmtHalfBath,
-        # 'FullBath':FullBath,
-        # 'BsmtFullBath':BsmtFullBath,
-        # 'MoSold':MoSold,
-        # 'OverallCond':OverallCond,
-        # 'YearBuilt':YearBuilt,
-        # 'ThreeSsnPorch':ThreeSsnPorch,
-        # 'ScreenPorch':ScreenPorch,
-        # 'LowQualFinSF':LowQualFinSF,
-        # 'YearRemodAdd':YearRemodAdd,
-        # 'GarageArea':GarageArea,
-        # 'EnclosedPorch':EnclosedPorch,
-        # 'FirstFlrSF':FirstFlrSF,
-        # 'SecondFlrSF':SecondFlrSF,
-        # 'GarageCars':GarageCars,
-        # }
-        # data_addQual = pd.DataFrame(user_data_addQual, index=[0])
-        # price_addQual = model.predict(data_addQual)
-        # f_price_addQual = "{:,.2f}".format(price_addQual[0])
-        # st.metric("Value of Improving the Finish Quality by 1", f_price_addQual, delta = formatted_price, delta_color = "normal", help = None, label_visibility = "visible")
+        user_data_addQual = {
+        'OverallQual':OverallQual + 1, 
+        'GarageCars':GarageCars, 
+        'KitchenAbvGr':KitchenAbvGr, 
+        'BedroomAbvGr':BedroomAbvGr,
+        'BsmtFullBath':BsmtFullBath, 
+        'OverallCond':OverallCond, 
+        'TotRmsAbvGrd':TotRmsAbvGrd, 
+        'Fireplaces':Fireplaces, 
+        'FullBath':FullBath, 
+        'HalfBath':HalfBath, 
+        'BsmtHalfBath':BsmtHalfBath, 
+        'YrSold':YrSold, 
+        'YearBuilt':YearBuilt, 
+        'MSSubClass':MSSubClass,
+        'YearRemodAdd':YearRemodAdd, 
+        'ScreenPorch':ScreenPorch, 
+        'MoSold':MoSold, 
+        'PoolArea':PoolArea, 
+        'GrLivArea':GrLivArea,
+        'MasVnrArea':MasVnrArea
+        }
+        data_addQual = pd.DataFrame(user_data_addQual, index=[0])
+        price_addQual = model.predict(data_addQual)
+        f_price_addQual = "{:,.2f}".format(price_addQual[0])
+        change_price_1 = ((price_addQual[0] - price[0])/price[0])*100
+        f_delta_price = "{:,.2f}".format(change_price_1) +"%"
+        st.metric("Value of Improving the Finish Quality by 1", f_price_addQual, delta = f_delta_price , delta_color = "normal", help = None, label_visibility = "visible")
 
-        # #st.metric("Prediction Accuracy", model.score(data, ), delta = None, delta_color = "off", help = None, label_visibility = "visible")
-        # st.metric("Prediction Accuracy", "84.18%", delta = None, delta_color = "off", help = None, label_visibility = "visible") #hard coded accuracy
+        #st.metric("Prediction Accuracy", model.score(data, ), delta = None, delta_color = "off", help = None, label_visibility = "visible")
+        st.metric("Prediction Accuracy", "80.81%", delta = None, delta_color = "off", help = None, label_visibility = "visible") #hard coded accuracy
 
         # endTime = time.time()
         # modelRunTime = endTime - startTime
         # st.metric("Run Time", modelRunTime, delta = None, delta_color = "off", help = None, label_visibility = "visible") #model run time
+      except:
+        st.write('Must fill out all fields to predict the price.')
+
 
 main()
