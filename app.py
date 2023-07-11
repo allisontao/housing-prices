@@ -3,250 +3,445 @@ import pandas as pd
 import numpy as np
 import pickle
 import time
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 st.title('House Price Prediction')
 
+
 def main():
-  with st.form(key='form'):
-    YearBuilt = st.sidebar.number_input('Year of original construction date:', min_value= 1500, max_value=2023, value= 2010, step=1)
-    YearRemodAdd = st.sidebar.number_input('Year of remodel date (if it has not been remodeled, enter the year of original construction):', min_value= YearBuilt, max_value=2023, value= YearBuilt, step=1, help='This value should be greater than or equal to the original construction year') 
-    YrSold = st.sidebar.number_input('Year the house was sold:', min_value= 1500, max_value=2023, value= 2010, step=1)
-    MoSold = st.sidebar.selectbox('Select month sold (1 corresponds to January and 12 corresponds to December, etc):',(1,2,3,4,5,6,7,8,9,10,11,12))
-    MSSubClass = st.sidebar.number_input('Building class:', min_value=0)
-    GrLivArea = st.sidebar.number_input('Ground living area in square feet:', min_value=0)
-    MasVnrArea = st.sidebar.number_input('Masonry veneer area in square feet:', min_value=0)
-    PoolArea = st.sidebar.number_input('Pool area in square feet:', min_value=0)
-    TotRmsAbvGrd = st.sidebar.number_input('Total rooms above ground (not including bathrooms):', step=1, min_value=0) 
-    BedroomAbvGr = st.sidebar.number_input('Number of bedrooms above ground:', step=1, min_value=0) 
-    KitchenAbvGr = st.sidebar.number_input('Number of kitchens above ground:', step=1, min_value=0)
-    Fireplaces = st.sidebar.number_input('Number of fireplaces:', step=1, min_value=0)
-    BsmtFullBath = st.sidebar.number_input('Number of full bathrooms in the basement:', step=1, min_value=0)  
-    FullBath = st.sidebar.number_input('Number of full bathrooms above ground:', step=1, min_value=0) 
-    HalfBath = st.sidebar.number_input('Number of half baths above ground:', step=1, min_value=0) 
-    BsmtHalfBath = st.sidebar.number_input('Select the number of half bathrooms in the basement:', step=1) 
-    ScreenPorch = st.sidebar.number_input('Screen porch area in square feet:', min_value=0)
-    GarageCars = st.sidebar.number_input('Size of garage in car capacity:', step=1, min_value=0)
-    OverallCond = st.sidebar.slider('Select overall condition rating:', min_value=1, max_value=10, step=1) 
-    OverallQual = st.sidebar.slider('Select rating for overall material and finish quality:', min_value=1, max_value=10, step=1)
-    
-    st.markdown("Press submit button below after inputting house data on the left to get the predicted house price!")
-    submit_button = st.form_submit_button(label='Submit')
+    with st.form(key='form'):
+        YearBuilt = st.sidebar.number_input(
+            'Year of original construction date:', min_value=1500, max_value=2023, value=2010, step=1)
+        YearRemodAdd = st.sidebar.number_input('Year of remodel date (if it has not been remodeled, enter the year of original construction):', min_value=YearBuilt,
+                                               max_value=2023, value=YearBuilt, step=1, help='This value should be greater than or equal to the original construction year')
+        YrSold = st.sidebar.number_input(
+            'Year the house was sold:', min_value=1500, max_value=2023, value=2010, step=1)
+        MoSold = st.sidebar.selectbox(
+            'Select month sold (1 corresponds to January and 12 corresponds to December, etc):', (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12))
+        MSSubClass = st.sidebar.selectbox(
+            'Building class:', (20, 30, 40, 45, 50, 60, 70, 75, 80, 85,  90, 120, 150, 160, 180, 190))
+        GrLivArea = st.sidebar.number_input(
+            'Ground living area in square feet:', min_value=0)
+        MasVnrArea = st.sidebar.number_input(
+            'Masonry veneer area in square feet:', min_value=0)
+        PoolArea = st.sidebar.number_input(
+            'Pool area in square feet:', min_value=0)
+        TotRmsAbvGrd = st.sidebar.number_input(
+            'Total rooms above ground (not including bathrooms):', step=1, min_value=0)
+        BedroomAbvGr = st.sidebar.number_input(
+            'Number of bedrooms above ground:', step=1, min_value=0)
+        KitchenAbvGr = st.sidebar.number_input(
+            'Number of kitchens above ground:', step=1, min_value=0)
+        Fireplaces = st.sidebar.number_input(
+            'Number of fireplaces:', step=1, min_value=0)
+        BsmtFullBath = st.sidebar.number_input(
+            'Number of full bathrooms in the basement:', step=1, min_value=0)
+        FullBath = st.sidebar.number_input(
+            'Number of full bathrooms above ground:', step=1, min_value=0)
+        HalfBath = st.sidebar.number_input(
+            'Number of half baths above ground:', step=1, min_value=0)
+        BsmtHalfBath = st.sidebar.number_input(
+            'Select the number of half bathrooms in the basement:', step=1)
+        ScreenPorch = st.sidebar.number_input(
+            'Screen porch area in square feet:', min_value=0)
+        GarageCars = st.sidebar.number_input(
+            'Size of garage in car capacity:', step=1, min_value=0)
+        OverallCond = st.sidebar.slider(
+            'Select overall condition rating:', min_value=1, max_value=10, step=1)
+        OverallQual = st.sidebar.slider(
+            'Select rating for overall material and finish quality:', min_value=1, max_value=10, step=1)
 
-    if submit_button:
-   
-      user_data = {
-      'OverallQual':OverallQual, 
-      'GarageCars':GarageCars, 
-      'KitchenAbvGr':KitchenAbvGr, 
-      'BedroomAbvGr':BedroomAbvGr,
-      'BsmtFullBath':BsmtFullBath, 
-      'OverallCond':OverallCond, 
-      'TotRmsAbvGrd':TotRmsAbvGrd, 
-      'Fireplaces':Fireplaces, 
-      'FullBath':FullBath, 
-      'HalfBath':HalfBath, 
-      'BsmtHalfBath':BsmtHalfBath, 
-      'YrSold':YrSold, 
-      'YearBuilt':YearBuilt, 
-      'MSSubClass':MSSubClass,
-      'YearRemodAdd':YearRemodAdd, 
-      'ScreenPorch':ScreenPorch, 
-      'MoSold':MoSold, 
-      'PoolArea':PoolArea, 
-      'GrLivArea':GrLivArea,
-      'MasVnrArea':MasVnrArea
-      }
+        st.markdown(
+            "Press submit button below after inputting house data on the left to get the predicted house price!")
+        submit_button = st.form_submit_button(label='Submit')
 
-      data = pd.DataFrame(user_data, index=[0])
-      model = pickle.load(open('model.sav', 'rb'))
-      try:
-        #startTime = time.time()
-        price = model.predict(data)
-        formatted_price = "{:,.2f}".format(price[0])
-        st.subheader('Predicted house price:')
-        st.subheader('$'+formatted_price)
-        modelCoefficients = model.coef_
-        print(modelCoefficients)
-        column_names = ['OverallQual', 'GarageCars', 'KitchenAbvGr', 'BedroomAbvGr',
-        'BsmtFullBath', 'OverallCond', 'TotRmsAbvGrd', 'Fireplaces', 
-        'FullBath', 'HalfBath', 'BsmtHalfBath', 'YrSold', 'YearBuilt', 
-        'MSSubClass','YearRemodAdd', 'ScreenPorch', 'MoSold', 
-        'PoolArea', 'GrLivArea','MasVnrArea']
-        # Create a pandas DataFrame with your data
-        coef_df = pd.DataFrame({
-            'Features': column_names,
-            'Coefficients': modelCoefficients
-        })
+        if submit_button:
 
-        # Set 'Features' as index
-        coef_df = coef_df.set_index('Features')
+            user_data = {
+                'OverallQual': OverallQual,
+                'GarageCars': GarageCars,
+                'KitchenAbvGr': KitchenAbvGr,
+                'BedroomAbvGr': BedroomAbvGr,
+                'BsmtFullBath': BsmtFullBath,
+                'OverallCond': OverallCond,
+                'TotRmsAbvGrd': TotRmsAbvGrd,
+                'Fireplaces': Fireplaces,
+                'FullBath': FullBath,
+                'HalfBath': HalfBath,
+                'BsmtHalfBath': BsmtHalfBath,
+                'YrSold': YrSold,
+                'YearBuilt': YearBuilt,
+                'MSSubClass': MSSubClass,
+                'YearRemodAdd': YearRemodAdd,
+                'ScreenPorch': ScreenPorch,
+                'MoSold': MoSold,
+                'PoolArea': PoolArea,
+                'GrLivArea': GrLivArea,
+                'MasVnrArea': MasVnrArea
+            }
 
-        # Convert index to CategoricalIndex with categories in original order
-        coef_df.index = pd.CategoricalIndex(coef_df.index, categories=column_names, ordered=True)
+            data = pd.DataFrame(user_data, index=[0])
+            model = pickle.load(open('model.sav', 'rb'))
+            # try:
+            # startTime = time.time()
+            price = model.predict(data)
+            formatted_price = "{:,.2f}".format(price[0])
+            st.subheader('Predicted house price:')
+            st.subheader('$'+formatted_price)
+            modelCoefficients = model.coef_
+            print(modelCoefficients)
+            column_names = ['OverallQual', 'BsmtFullBath', 'GarageCars', 'BedroomAbvGr', 'BsmtHalfBath',
+                            'KitchenAbvGr', 'Fireplaces', 'TotRmsAbvGrd', 'OverallCond', 'FullBath',
+                            'HalfBath', 'YrSold', 'YearBuilt', 'MSSubClass', 'YearRemodAdd', 'GrLivArea',
+                            'ScreenPorch', 'MasVnrArea', 'MoSold', 'PoolArea']
 
-        # Sort index according to the category order specified
-        coef_df = coef_df.sort_index()
-        
-        #Feature Bar Chart Title
-        st.markdown("#### Scaled Impact of Features on Price Prediction")
-       
-        # Use DataFrame in Streamlit
-        st.bar_chart(coef_df)
+            # Create a pandas DataFrame with your data
+            df = pd.DataFrame({
+                'Features': ['OverallQual', 'GarageCars', 'KitchenAbvGr', 'BedroomAbvGr', 'BsmtFullBath',
+                             'OverallCond', 'TotRmsAbvGrd', 'Fireplaces', 'FullBath', 'HalfBath',
+                             'BsmtHalfBath', 'YrSold', 'YearBuilt', 'MSSubClass', 'YearRemodAdd',
+                             'ScreenPorch', 'MoSold', 'PoolArea', 'GrLivArea'],
+                'Coefficients': [19659.381016, 11500.819277, -7778.314665, -11060.122583, 18817.239377,
+                                 4762.050670, 5598.605698, 5706.370483, 4227.823147, -4168.690288,
+                                 8407.988769, -355.294434, 329.969885, -223.304144, 137.435422,
+                                 48.841289, 34.401331, 2.431497, 49.683259]
+            })
 
-      
-        # user_data_addedArea = { #taking user lot area parameter and adding 100 sqft, comparing new prediction with based prediction to see effect
-        # 'LotArea':LotArea + 100,
-        # 'BedroomAbvGr':BedroomAbvGr,
-        # 'HalfBath':HalfBath,
-        # 'GrLivArea':GrLivArea,
-        # 'OverallQual':OverallQual,
-        # 'KitchenAbvGr':KitchenAbvGr,
-        # 'TotRmsAbvGrd':TotRmsAbvGrd,
-        # 'BsmtHalfBath':BsmtHalfBath,
-        # 'FullBath':FullBath,
-        # 'BsmtFullBath':BsmtFullBath,
-        # 'MoSold':MoSold,
-        # 'OverallCond':OverallCond,
-        # 'YearBuilt':YearBuilt,
-        # 'ThreeSsnPorch':ThreeSsnPorch,
-        # 'ScreenPorch':ScreenPorch,
-        # 'LowQualFinSF':LowQualFinSF,
-        # 'YearRemodAdd':YearRemodAdd,
-        # 'GarageArea':GarageArea,
-        # 'EnclosedPorch':EnclosedPorch,
-        # 'FirstFlrSF':FirstFlrSF,
-        # 'SecondFlrSF':SecondFlrSF,
-        # 'GarageCars':GarageCars,
-        # }
-        # data_addedArea = pd.DataFrame(user_data_addedArea, index=[0])
-        # price_addedArea = model.predict(data_addedArea)
-        # f_price_addedArea = "{:,.2f}".format(price_addedArea[0])
-        # st.metric("Value of Adding 100sq.feet", f_price_addedArea, delta = formatted_price, delta_color = "normal", help = None, label_visibility = "visible")
+            # Sort the DataFrame by 'Coefficients' in descending order
+            # Calculate the absolute values of 'Coefficients'
+            df['AbsCoefficients'] = np.abs(df['Coefficients'])
 
-        # user_data_addBedAbvGr = {
-        # 'LotArea':LotArea,
-        # 'BedroomAbvGr':BedroomAbvGr + 1,
-        # 'HalfBath':HalfBath,
-        # 'GrLivArea':GrLivArea,
-        # 'OverallQual':OverallQual,
-        # 'KitchenAbvGr':KitchenAbvGr,
-        # 'TotRmsAbvGrd':TotRmsAbvGrd,
-        # 'BsmtHalfBath':BsmtHalfBath,
-        # 'FullBath':FullBath,
-        # 'BsmtFullBath':BsmtFullBath,
-        # 'MoSold':MoSold,
-        # 'OverallCond':OverallCond,
-        # 'YearBuilt':YearBuilt,
-        # 'ThreeSsnPorch':ThreeSsnPorch,
-        # 'ScreenPorch':ScreenPorch,
-        # 'LowQualFinSF':LowQualFinSF,
-        # 'YearRemodAdd':YearRemodAdd,
-        # 'GarageArea':GarageArea,
-        # 'EnclosedPorch':EnclosedPorch,
-        # 'FirstFlrSF':FirstFlrSF,
-        # 'SecondFlrSF':SecondFlrSF,
-        # 'GarageCars':GarageCars,
-        # }
-        # data_addBedAbvGr = pd.DataFrame(user_data_addBedAbvGr, index=[0])
-        # price_addBedAbvGr = model.predict(data_addBedAbvGr)
-        # f_price_addBedAbvGr = "{:,.2f}".format(price_addBedAbvGr[0])
-        # st.metric("Value of Adding a Bedroom Above the Garage", f_price_addBedAbvGr, delta = formatted_price, delta_color = "normal", help = None, label_visibility = "visible")
+            # Sort the DataFrame by 'AbsCoefficients' in descending order
+            df = df.sort_values('AbsCoefficients', ascending=False)
 
-        # user_data_addHalfBath = {
-        # 'LotArea':LotArea,
-        # 'BedroomAbvGr':BedroomAbvGr,
-        # 'HalfBath':HalfBath + 1,
-        # 'GrLivArea':GrLivArea,
-        # 'OverallQual':OverallQual,
-        # 'KitchenAbvGr':KitchenAbvGr,
-        # 'TotRmsAbvGrd':TotRmsAbvGrd,
-        # 'BsmtHalfBath':BsmtHalfBath,
-        # 'FullBath':FullBath,
-        # 'BsmtFullBath':BsmtFullBath,
-        # 'MoSold':MoSold,
-        # 'OverallCond':OverallCond,
-        # 'YearBuilt':YearBuilt,
-        # 'ThreeSsnPorch':ThreeSsnPorch,
-        # 'ScreenPorch':ScreenPorch,
-        # 'LowQualFinSF':LowQualFinSF,
-        # 'YearRemodAdd':YearRemodAdd,
-        # 'GarageArea':GarageArea,
-        # 'EnclosedPorch':EnclosedPorch,
-        # 'FirstFlrSF':FirstFlrSF,
-        # 'SecondFlrSF':SecondFlrSF,
-        # 'GarageCars':GarageCars,
-        # }
-        # data_addHalfBath = pd.DataFrame(user_data_addHalfBath, index=[0])
-        # price_addHalfBath = model.predict(data_addHalfBath)
-        # f_price_addHalfBath = "{:,.2f}".format(price_addHalfBath[0])
-        # st.metric("Value of Adding a Half-Bathroom", f_price_addHalfBath, delta = formatted_price, delta_color = "normal", help = None, label_visibility = "visible")
+            # Create a bar chart with 'Features' on the x-axis and 'Coefficients' on the y-axis
+            st.bar_chart(df.set_index('Features')['Coefficients'])
 
-        # user_data_addGrLivArea = {
-        # 'LotArea':LotArea,
-        # 'BedroomAbvGr':BedroomAbvGr,
-        # 'HalfBath':HalfBath,
-        # 'GrLivArea':GrLivArea + 100,
-        # 'OverallQual':OverallQual,
-        # 'KitchenAbvGr':KitchenAbvGr,
-        # 'TotRmsAbvGrd':TotRmsAbvGrd,
-        # 'BsmtHalfBath':BsmtHalfBath,
-        # 'FullBath':FullBath,
-        # 'BsmtFullBath':BsmtFullBath,
-        # 'MoSold':MoSold,
-        # 'OverallCond':OverallCond,
-        # 'YearBuilt':YearBuilt,
-        # 'ThreeSsnPorch':ThreeSsnPorch,
-        # 'ScreenPorch':ScreenPorch,
-        # 'LowQualFinSF':LowQualFinSF,
-        # 'YearRemodAdd':YearRemodAdd,
-        # 'GarageArea':GarageArea,
-        # 'EnclosedPorch':EnclosedPorch,
-        # 'FirstFlrSF':FirstFlrSF,
-        # 'SecondFlrSF':SecondFlrSF,
-        # 'GarageCars':GarageCars,
-        # }
-        # data_addGrLivArea = pd.DataFrame(user_data_addGrLivArea, index=[0])
-        # price_addGrLivArea = model.predict(data_addGrLivArea)
-        # f_price_addGrLivArea = "{:,.2f}".format(price_addGrLivArea[0])
-        # st.metric("Value of Adding 100sq.feet to the Ground Floor Living Space", f_price_addGrLivArea, delta = formatted_price, delta_color = "normal", help = None, label_visibility = "visible")
+            # Feature Bar Chart Title
+            st.markdown(
+                "#### Scaled Impact of Features on Price Prediction")
 
-        user_data_addQual = {
-        'OverallQual':OverallQual + 1, 
-        'GarageCars':GarageCars, 
-        'KitchenAbvGr':KitchenAbvGr, 
-        'BedroomAbvGr':BedroomAbvGr,
-        'BsmtFullBath':BsmtFullBath, 
-        'OverallCond':OverallCond, 
-        'TotRmsAbvGrd':TotRmsAbvGrd, 
-        'Fireplaces':Fireplaces, 
-        'FullBath':FullBath, 
-        'HalfBath':HalfBath, 
-        'BsmtHalfBath':BsmtHalfBath, 
-        'YrSold':YrSold, 
-        'YearBuilt':YearBuilt, 
-        'MSSubClass':MSSubClass,
-        'YearRemodAdd':YearRemodAdd, 
-        'ScreenPorch':ScreenPorch, 
-        'MoSold':MoSold, 
-        'PoolArea':PoolArea, 
-        'GrLivArea':GrLivArea,
-        'MasVnrArea':MasVnrArea
-        }
-        data_addQual = pd.DataFrame(user_data_addQual, index=[0])
-        price_addQual = model.predict(data_addQual)
-        f_price_addQual = "{:,.2f}".format(price_addQual[0])
-        change_price_1 = ((price_addQual[0] - price[0])/price[0])*100
-        f_delta_price = "{:,.2f}".format(change_price_1) +"%"
-        st.metric("Value of Improving the Finish Quality by 1", f_price_addQual, delta = f_delta_price , delta_color = "normal", help = None, label_visibility = "visible")
+            # Compute the correlation matrix from the coefficients DataFrame
+            # corr = coef_df.corr()
+           # print(corr)
 
-        #st.metric("Prediction Accuracy", model.score(data, ), delta = None, delta_color = "off", help = None, label_visibility = "visible")
-        st.metric("Prediction Accuracy", "80.81%", delta = None, delta_color = "off", help = None, label_visibility = "visible") #hard coded accuracy
+            # Create a heatmap
+            # st.header(
+            #     'Correlation Heatmap of Linear Regression Coefficients')
+            # fig, ax = plt.subplots()
+            # sns.heatmap(corr, annot=True, fmt=".2f",
+            #             cmap='coolwarm', ax=ax)
+            # st.pyplot(fig)
 
-        # endTime = time.time()
-        # modelRunTime = endTime - startTime
-        # st.metric("Run Time", modelRunTime, delta = None, delta_color = "off", help = None, label_visibility = "visible") #model run time
-      except:
-        st.write('Must fill out all fields to predict the price.')
+            st.metric("Prediction Accuracy", "83.31%", delta=None, delta_color="off",
+                      help=None, label_visibility="visible")  # hard coded accuracy
+
+            def create_metric(modified_data, original_price):
+                data = pd.DataFrame(modified_data, index=[0])
+                new_price = model.predict(data)
+                f_new_price = "{:,.2f}".format(new_price[0])
+                change_price = (
+                    (new_price[0] - original_price[0])/original_price[0])*100
+                f_delta_price = "{:,.2f}".format(change_price) + "%"
+                return f_new_price, f_delta_price
+
+            add_OverallQual = {
+                'OverallQual': OverallQual + 1,
+                'GarageCars': GarageCars,
+                'KitchenAbvGr': KitchenAbvGr,
+                'BedroomAbvGr': BedroomAbvGr,
+                'BsmtFullBath': BsmtFullBath,
+                'OverallCond': OverallCond,
+                'TotRmsAbvGrd': TotRmsAbvGrd,
+                'Fireplaces': Fireplaces,
+                'FullBath': FullBath,
+                'HalfBath': HalfBath,
+                'BsmtHalfBath': BsmtHalfBath,
+                'YrSold': YrSold,
+                'YearBuilt': YearBuilt,
+                'MSSubClass': MSSubClass,
+                'YearRemodAdd': YearRemodAdd,
+                'ScreenPorch': ScreenPorch,
+                'MoSold': MoSold,
+                'PoolArea': PoolArea,
+                'GrLivArea': GrLivArea,
+                'MasVnrArea': MasVnrArea
+            }
+
+            subtract_OverallQual = {
+                'OverallQual': OverallQual - 1,
+                'GarageCars': GarageCars,
+                'KitchenAbvGr': KitchenAbvGr,
+                'BedroomAbvGr': BedroomAbvGr,
+                'BsmtFullBath': BsmtFullBath,
+                'OverallCond': OverallCond,
+                'TotRmsAbvGrd': TotRmsAbvGrd,
+                'Fireplaces': Fireplaces,
+                'FullBath': FullBath,
+                'HalfBath': HalfBath,
+                'BsmtHalfBath': BsmtHalfBath,
+                'YrSold': YrSold,
+                'YearBuilt': YearBuilt,
+                'MSSubClass': MSSubClass,
+                'YearRemodAdd': YearRemodAdd,
+                'ScreenPorch': ScreenPorch,
+                'MoSold': MoSold,
+                'PoolArea': PoolArea,
+                'GrLivArea': GrLivArea,
+                'MasVnrArea': MasVnrArea
+            }
+
+            add_GarageCars = {
+                'OverallQual': OverallQual,
+                'GarageCars': GarageCars + 1,
+                'KitchenAbvGr': KitchenAbvGr,
+                'BedroomAbvGr': BedroomAbvGr,
+                'BsmtFullBath': BsmtFullBath,
+                'OverallCond': OverallCond,
+                'TotRmsAbvGrd': TotRmsAbvGrd,
+                'Fireplaces': Fireplaces,
+                'FullBath': FullBath,
+                'HalfBath': HalfBath,
+                'BsmtHalfBath': BsmtHalfBath,
+                'YrSold': YrSold,
+                'YearBuilt': YearBuilt,
+                'MSSubClass': MSSubClass,
+                'YearRemodAdd': YearRemodAdd,
+                'ScreenPorch': ScreenPorch,
+                'MoSold': MoSold,
+                'PoolArea': PoolArea,
+                'GrLivArea': GrLivArea,
+                'MasVnrArea': MasVnrArea
+            }
+
+            subtract_GarageCars = {
+                'OverallQual': OverallQual,
+                'GarageCars': GarageCars - 1,
+                'KitchenAbvGr': KitchenAbvGr,
+                'BedroomAbvGr': BedroomAbvGr,
+                'BsmtFullBath': BsmtFullBath,
+                'OverallCond': OverallCond,
+                'TotRmsAbvGrd': TotRmsAbvGrd,
+                'Fireplaces': Fireplaces,
+                'FullBath': FullBath,
+                'HalfBath': HalfBath,
+                'BsmtHalfBath': BsmtHalfBath,
+                'YrSold': YrSold,
+                'YearBuilt': YearBuilt,
+                'MSSubClass': MSSubClass,
+                'YearRemodAdd': YearRemodAdd,
+                'ScreenPorch': ScreenPorch,
+                'MoSold': MoSold,
+                'PoolArea': PoolArea,
+                'GrLivArea': GrLivArea,
+                'MasVnrArea': MasVnrArea
+            }
+
+            add_KitchenAbvGr = {
+                'OverallQual': OverallQual,
+                'GarageCars': GarageCars,
+                'KitchenAbvGr': KitchenAbvGr + 1,
+                'BedroomAbvGr': BedroomAbvGr,
+                'BsmtFullBath': BsmtFullBath,
+                'OverallCond': OverallCond,
+                'TotRmsAbvGrd': TotRmsAbvGrd,
+                'Fireplaces': Fireplaces,
+                'FullBath': FullBath,
+                'HalfBath': HalfBath,
+                'BsmtHalfBath': BsmtHalfBath,
+                'YrSold': YrSold,
+                'YearBuilt': YearBuilt,
+                'MSSubClass': MSSubClass,
+                'YearRemodAdd': YearRemodAdd,
+                'ScreenPorch': ScreenPorch,
+                'MoSold': MoSold,
+                'PoolArea': PoolArea,
+                'GrLivArea': GrLivArea,
+                'MasVnrArea': MasVnrArea
+            }
+
+            subtract_KitchenAbvGr = {
+                'OverallQual': OverallQual,
+                'GarageCars': GarageCars,
+                'KitchenAbvGr': KitchenAbvGr - 1,
+                'BedroomAbvGr': BedroomAbvGr,
+                'BsmtFullBath': BsmtFullBath,
+                'OverallCond': OverallCond,
+                'TotRmsAbvGrd': TotRmsAbvGrd,
+                'Fireplaces': Fireplaces,
+                'FullBath': FullBath,
+                'HalfBath': HalfBath,
+                'BsmtHalfBath': BsmtHalfBath,
+                'YrSold': YrSold,
+                'YearBuilt': YearBuilt,
+                'MSSubClass': MSSubClass,
+                'YearRemodAdd': YearRemodAdd,
+                'ScreenPorch': ScreenPorch,
+                'MoSold': MoSold,
+                'PoolArea': PoolArea,
+                'GrLivArea': GrLivArea,
+                'MasVnrArea': MasVnrArea
+            }
+
+            add_BedroomAbvGr = {
+                'OverallQual': OverallQual,
+                'GarageCars': GarageCars,
+                'KitchenAbvGr': KitchenAbvGr,
+                'BedroomAbvGr': BedroomAbvGr + 1,
+                'BsmtFullBath': BsmtFullBath,
+                'OverallCond': OverallCond,
+                'TotRmsAbvGrd': TotRmsAbvGrd,
+                'Fireplaces': Fireplaces,
+                'FullBath': FullBath,
+                'HalfBath': HalfBath,
+                'BsmtHalfBath': BsmtHalfBath,
+                'YrSold': YrSold,
+                'YearBuilt': YearBuilt,
+                'MSSubClass': MSSubClass,
+                'YearRemodAdd': YearRemodAdd,
+                'ScreenPorch': ScreenPorch,
+                'MoSold': MoSold,
+                'PoolArea': PoolArea,
+                'GrLivArea': GrLivArea,
+                'MasVnrArea': MasVnrArea
+            }
+
+            subtract_BedroomAbvGr = {
+                'OverallQual': OverallQual,
+                'GarageCars': GarageCars,
+                'KitchenAbvGr': KitchenAbvGr,
+                'BedroomAbvGr': BedroomAbvGr - 1,
+                'BsmtFullBath': BsmtFullBath,
+                'OverallCond': OverallCond,
+                'TotRmsAbvGrd': TotRmsAbvGrd,
+                'Fireplaces': Fireplaces,
+                'FullBath': FullBath,
+                'HalfBath': HalfBath,
+                'BsmtHalfBath': BsmtHalfBath,
+                'YrSold': YrSold,
+                'YearBuilt': YearBuilt,
+                'MSSubClass': MSSubClass,
+                'YearRemodAdd': YearRemodAdd,
+                'ScreenPorch': ScreenPorch,
+                'MoSold': MoSold,
+                'PoolArea': PoolArea,
+                'GrLivArea': GrLivArea,
+                'MasVnrArea': MasVnrArea
+            }
+
+            add_BsmtFullBath = {
+                'OverallQual': OverallQual,
+                'GarageCars': GarageCars,
+                'KitchenAbvGr': KitchenAbvGr,
+                'BedroomAbvGr': BedroomAbvGr,
+                'BsmtFullBath': BsmtFullBath + 1,
+                'OverallCond': OverallCond,
+                'TotRmsAbvGrd': TotRmsAbvGrd,
+                'Fireplaces': Fireplaces,
+                'FullBath': FullBath,
+                'HalfBath': HalfBath,
+                'BsmtHalfBath': BsmtHalfBath,
+                'YrSold': YrSold,
+                'YearBuilt': YearBuilt,
+                'MSSubClass': MSSubClass,
+                'YearRemodAdd': YearRemodAdd,
+                'ScreenPorch': ScreenPorch,
+                'MoSold': MoSold,
+                'PoolArea': PoolArea,
+                'GrLivArea': GrLivArea,
+                'MasVnrArea': MasVnrArea
+            }
+
+            subtract_BsmtFullBath = {
+                'OverallQual': OverallQual,
+                'GarageCars': GarageCars,
+                'KitchenAbvGr': KitchenAbvGr,
+                'BedroomAbvGr': BedroomAbvGr,
+                'BsmtFullBath': BsmtFullBath - 1,
+                'OverallCond': OverallCond,
+                'TotRmsAbvGrd': TotRmsAbvGrd,
+                'Fireplaces': Fireplaces,
+                'FullBath': FullBath,
+                'HalfBath': HalfBath,
+                'BsmtHalfBath': BsmtHalfBath,
+                'YrSold': YrSold,
+                'YearBuilt': YearBuilt,
+                'MSSubClass': MSSubClass,
+                'YearRemodAdd': YearRemodAdd,
+                'ScreenPorch': ScreenPorch,
+                'MoSold': MoSold,
+                'PoolArea': PoolArea,
+                'GrLivArea': GrLivArea,
+                'MasVnrArea': MasVnrArea
+            }
+
+            col_1, col_2 = st.columns(2)
+
+            add_OverallQual_price, add_OverallQual_change = create_metric(
+                add_OverallQual, price)
+            subtract_OverallQual_price, subtract_OverallQual_change = create_metric(
+                subtract_OverallQual, price)
+
+            col_1.metric("Predicted Value of Improving the Finish Quality by 1", add_OverallQual_price,
+                         delta=add_OverallQual_change, delta_color="normal", help=None, label_visibility="visible")
+            col_2.metric("Predicted Cost Savings in Decreasing the Finish Quality by 1", subtract_OverallQual_price,
+                         delta=subtract_OverallQual_change, delta_color="normal", help=None, label_visibility="visible")
+
+            col_3, col_4 = st.columns(2)
+
+            add_GarageCars_price, add_GarageCars_change = create_metric(
+                add_GarageCars, price)
+            subtract_GarageCars_price, subtract_GarageCars_change = create_metric(
+                subtract_GarageCars, price)
+
+            col_3.metric("Predicted Value of Adding Garage Car Capacity by 1", add_GarageCars_price,
+                         delta=add_GarageCars_change, delta_color="normal", help=None, label_visibility="visible")
+            col_4.metric("Predicted Decrease in Value Decreasing Garage Car Capacity by 1", subtract_GarageCars_price,
+                         delta=subtract_GarageCars_change, delta_color="normal", help=None, label_visibility="visible")
+
+            col_5, col_6 = st.columns(2)
+
+            add_KitchenAbvGr_price, add_KitchenAbvGr_change = create_metric(
+                add_KitchenAbvGr, price)
+            subtract_KitchenAbvGr_price, subtract_KitchenAbvGr_change = create_metric(
+                subtract_KitchenAbvGr, price)
+
+            col_5.metric("Predicted Value of Adding 1 Kitchen Above Grade", add_KitchenAbvGr_price,
+                         delta=add_KitchenAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
+            col_6.metric("Predicted Decrease in Value of Decreasing 1 Kitchen Above Grade", subtract_KitchenAbvGr_price,
+                         delta=subtract_KitchenAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
+
+            col_7, col_8 = st.columns(2)
+
+            add_BedroomAbvGr_price, add_BedroomAbvGr_change = create_metric(
+                add_BedroomAbvGr, price)
+            subtract_BedroomAbvGr_price, subtract_BedroomAbvGr_change = create_metric(
+                subtract_BedroomAbvGr, price)
+
+            col_7.metric("Predicted Value of Adding 1 Bedroom Above Grade", add_BedroomAbvGr_price,
+                         delta=add_BedroomAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
+            col_8.metric("Predicted Decrease in Value in Decreasing Bedrooms Above Grade by 1", subtract_BedroomAbvGr_price,
+                         delta=subtract_BedroomAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
+
+            col_9, col_10 = st.columns(2)
+
+            add_BsmtFullBath_price, add_BsmtFullBath_change = create_metric(
+                add_BsmtFullBath, price)
+            subtract_BsmtFullBath_price, subtract_BsmtFullBath_change = create_metric(
+                subtract_BsmtFullBath, price)
+
+            col_9.metric("Predicted Value of Adding 1 Basement Full Bath", add_BsmtFullBath_price,
+                         delta=add_BsmtFullBath_change, delta_color="normal", help=None, label_visibility="visible")
+            col_10.metric("Predicted Decrease in Value of Decreasing Basement Full Baths by 1", subtract_BsmtFullBath_price,
+                          delta=subtract_BsmtFullBath_change, delta_color="normal", help=None, label_visibility="visible")
+
+            # endTime = time.time()
+            # modelRunTime = endTime - startTime
+            # st.metric("Run Time", modelRunTime, delta = None, delta_color = "off", help = None, label_visibility = "visible") #model run time
+            # except:
+            #     st.write('Must fill out all fields to predict the price.')
 
 
 main()
