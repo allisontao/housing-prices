@@ -6,11 +6,10 @@ import time
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-
 st.title('House Price Prediction')
 
-
 def main():
+    # Create the form with 20 features
     with st.form(key='form'):
         YearBuilt = st.sidebar.number_input(
             'Year of original construction date:', min_value=1500, max_value=2023, value=2010, step=1)
@@ -58,7 +57,6 @@ def main():
         submit_button = st.form_submit_button(label='Submit')
 
         if submit_button:
-
             user_data = {
                 'OverallQual': OverallQual,
                 'GarageCars': GarageCars,
@@ -82,37 +80,38 @@ def main():
                 'MasVnrArea': MasVnrArea
             }
 
+            # Create dataframe from user data submitted in the form
             data = pd.DataFrame(user_data, index=[0])
+            # Import model and raw data 
             model = pickle.load(open('model.sav', 'rb'))
             raw_data = pd.read_csv('raw_data.csv')
-            # try:
+            
             startTime = time.time()
+            
+            # Predict the price using the user inputted data
             price = model.predict(data)
+            predictEndTime = time.time()
+            
+            # Display predicted price
             formatted_price = "{:,.2f}".format(price[0])
-
             col1, col2 = st.columns(2)
             col1.metric("Predicted house price:", '$'+formatted_price, delta=None, delta_color="off",
                         label_visibility="visible", help=None)
 
+            # Hard coded accuracy from the model
             col2.metric("Prediction Accuracy", "85.05%", delta=None, delta_color="off",
-                        help='85% of the variation in price can be attributed to these features', label_visibility="visible")  # hard coded accuracy
+                        help='85% of the variation in price can be attributed to these features', label_visibility="visible")
 
-            modelCoefficients = model.coef_
-            # column_names = ['OverallQual', 'BsmtFullBath', 'GarageCars', 'BedroomAbvGr', 'BsmtHalfBath',
-            #                 'KitchenAbvGr', 'Fireplaces', 'TotRmsAbvGrd', 'OverallCond', 'FullBath',
-            #                 'HalfBath', 'YrSold', 'YearBuilt', 'MSSubClass', 'YearRemodAdd', 'GrLivArea',
-            #                 'ScreenPorch', 'MasVnrArea', 'MoSold', 'PoolArea']
-
-            # Create a pandas DataFrame with your data
+            # Dataframe containing each feature and their respective coefficients from the model
             df = pd.DataFrame({
                 'Features': ['OverallQual', 'GarageCars', 'KitchenAbvGr', 'BedroomAbvGr', 'BsmtFullBath',
-                             'OverallCond', 'TotRmsAbvGrd', 'Fireplaces', 'FullBath', 'HalfBath',
-                             'BsmtHalfBath', 'YrSold', 'YearBuilt', 'MSSubClass', 'YearRemodAdd',
-                             'ScreenPorch', 'MoSold', 'PoolArea', 'GrLivArea'],
+                            'OverallCond', 'TotRmsAbvGrd', 'Fireplaces', 'FullBath', 'HalfBath',
+                            'BsmtHalfBath', 'YrSold', 'YearBuilt', 'MSSubClass', 'YearRemodAdd',
+                            'ScreenPorch', 'MoSold', 'PoolArea', 'GrLivArea'],
                 'Coefficients': [19659.381016, 11500.819277, -7778.314665, -11060.122583, 18817.239377,
-                                 4762.050670, 5598.605698, 5706.370483, 4227.823147, -4168.690288,
-                                 8407.988769, -355.294434, 329.969885, -223.304144, 137.435422,
-                                 48.841289, 34.401331, 2.431497, 49.683259]
+                                4762.050670, 5598.605698, 5706.370483, 4227.823147, -4168.690288,
+                                8407.988769, -355.294434, 329.969885, -223.304144, 137.435422,
+                                48.841289, 34.401331, 2.431497, 49.683259]
             })
 
             # Sort the DataFrame by 'Coefficients' in descending order
@@ -122,32 +121,27 @@ def main():
             # Sort the DataFrame by 'AbsCoefficients' in descending order
             df = df.sort_values('AbsCoefficients', ascending=False)
 
-            # Feature Bar Chart Title
             st.markdown(
                 "##### Scaled Impact of Features on Price Prediction")
-
-            # Create a bar chart with 'Features' on the x-axis and 'Coefficients' on the y-axis
+            # Bar chart with 'Features' on the x-axis and 'Coefficients' on the y-axis
             st.bar_chart(df.set_index('Features')['Coefficients'])
 
             # Get the top 5 features
             top_5_features = df['Features'].values[:5]
-            top_10_features = df['Features'].values[:10]
 
             # Calculate the correlation matrix of the top 5 features
             corr_matrix = raw_data[top_5_features].corr()
 
-            # Heatmap Title
             st.markdown(
                 "##### Heatmap of Correlation Between Top 5 Features")
-
             # Create a heatmap of the correlation matrix
             plt.figure(figsize=(10, 8))
             sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
             st.pyplot(plt)
 
             # Features to consider for the plot
-            features = ['GrLivArea', '1stFlrSF', '2ndFlrSF', 'TotalBsmtSF', 'BsmtFinSF1',
-                        'BsmtUnfSF', 'LowQualFinSF', 'BsmtFinSF2', 'OverallQual', 'BedroomAbvGr']
+            features = ['OverallQual', 'GarageCars', 'KitchenAbvGr', 'BedroomAbvGr', 'BsmtFullBath',
+                            'OverallCond', 'TotRmsAbvGrd', 'Fireplaces', 'FullBath', 'HalfBath']
 
             # Define the size of the plot
             n = len(features)
@@ -157,6 +151,7 @@ def main():
             # Create subplots
             fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(20, 20))
 
+            # For each feature create a subplot
             for i, feature in enumerate(features):
                 r, c = i // ncols, i % ncols
                 ax = axes[r, c]
@@ -169,9 +164,12 @@ def main():
                 for j in range(r*ncols+c+1, nrows*ncols):
                     fig.delaxes(axes[j // ncols, j % ncols])
 
+            st.markdown(
+                "##### Effect of top 10 Features on Sale Price")
             plt.tight_layout()
             st.pyplot(fig)
 
+            # Function to create metric that compares modified price and original price
             def create_metric(modified_data, original_price):
                 data = pd.DataFrame(modified_data, index=[0])
                 new_price = model.predict(data)
@@ -181,6 +179,7 @@ def main():
                 f_delta_price = "{:,.2f}".format(change_price) + "%"
                 return f_new_price, f_delta_price
 
+            # Sample user data with overallqual + 1 point
             add_OverallQual = {
                 'OverallQual': OverallQual + 1,
                 'GarageCars': GarageCars,
@@ -204,6 +203,7 @@ def main():
                 'MasVnrArea': MasVnrArea
             }
 
+            # Sample user data with overallqual - 1 point
             subtract_OverallQual = {
                 'OverallQual': OverallQual - 1,
                 'GarageCars': GarageCars,
@@ -227,6 +227,7 @@ def main():
                 'MasVnrArea': MasVnrArea
             }
 
+            # Sample user data with + 1 garage capacity
             add_GarageCars = {
                 'OverallQual': OverallQual,
                 'GarageCars': GarageCars + 1,
@@ -250,6 +251,7 @@ def main():
                 'MasVnrArea': MasVnrArea
             }
 
+            # Sample user data with - 1 garage capacity     
             subtract_GarageCars = {
                 'OverallQual': OverallQual,
                 'GarageCars': GarageCars - 1,
@@ -272,7 +274,8 @@ def main():
                 'GrLivArea': GrLivArea,
                 'MasVnrArea': MasVnrArea
             }
-
+            
+            # Sample user data with + 1 kitchen
             add_KitchenAbvGr = {
                 'OverallQual': OverallQual,
                 'GarageCars': GarageCars,
@@ -296,6 +299,7 @@ def main():
                 'MasVnrArea': MasVnrArea
             }
 
+            # Sample user data with - 1 kitchen
             subtract_KitchenAbvGr = {
                 'OverallQual': OverallQual,
                 'GarageCars': GarageCars,
@@ -319,6 +323,7 @@ def main():
                 'MasVnrArea': MasVnrArea
             }
 
+            # Sample user data with + 1 bedroom
             add_BedroomAbvGr = {
                 'OverallQual': OverallQual,
                 'GarageCars': GarageCars,
@@ -342,6 +347,7 @@ def main():
                 'MasVnrArea': MasVnrArea
             }
 
+            # Sample user data with - 1 bedroom
             subtract_BedroomAbvGr = {
                 'OverallQual': OverallQual,
                 'GarageCars': GarageCars,
@@ -365,6 +371,7 @@ def main():
                 'MasVnrArea': MasVnrArea
             }
 
+            # Sample user data with + 1 basement full bath
             add_BsmtFullBath = {
                 'OverallQual': OverallQual,
                 'GarageCars': GarageCars,
@@ -388,6 +395,7 @@ def main():
                 'MasVnrArea': MasVnrArea
             }
 
+            # Sample user data with - 1 basement full bath
             subtract_BsmtFullBath = {
                 'OverallQual': OverallQual,
                 'GarageCars': GarageCars,
@@ -411,6 +419,7 @@ def main():
                 'MasVnrArea': MasVnrArea
             }
 
+            # Predict all metrics based on the above sample data
             col_1, col_2 = st.columns(2)
 
             add_OverallQual_price, add_OverallQual_change = create_metric(
@@ -419,9 +428,9 @@ def main():
                 subtract_OverallQual, price)
 
             col_1.metric("Predicted Value of Improving the Finish Quality by 1", '$'+add_OverallQual_price,
-                         delta=add_OverallQual_change, delta_color="normal", help=None, label_visibility="visible")
+                        delta=add_OverallQual_change, delta_color="normal", help=None, label_visibility="visible")
             col_2.metric("Predicted Value of Decreasing the Finish Quality by 1", '$'+subtract_OverallQual_price,
-                         delta=subtract_OverallQual_change, delta_color="normal", help=None, label_visibility="visible")
+                        delta=subtract_OverallQual_change, delta_color="normal", help=None, label_visibility="visible")
 
             col_3, col_4 = st.columns(2)
 
@@ -431,9 +440,9 @@ def main():
                 subtract_GarageCars, price)
 
             col_3.metric("Predicted Value of Adding Garage Car Capacity by 1", '$'+add_GarageCars_price,
-                         delta=add_GarageCars_change, delta_color="normal", help=None, label_visibility="visible")
+                        delta=add_GarageCars_change, delta_color="normal", help=None, label_visibility="visible")
             col_4.metric("Predicted Value of Decreasing Garage Car Capacity by 1", '$'+subtract_GarageCars_price,
-                         delta=subtract_GarageCars_change, delta_color="normal", help=None, label_visibility="visible")
+                        delta=subtract_GarageCars_change, delta_color="normal", help=None, label_visibility="visible")
 
             col_5, col_6 = st.columns(2)
 
@@ -443,9 +452,9 @@ def main():
                 subtract_KitchenAbvGr, price)
 
             col_5.metric("Predicted Value of Adding 1 Kitchen Above Grade", '$'+add_KitchenAbvGr_price,
-                         delta=add_KitchenAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
+                        delta=add_KitchenAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
             col_6.metric("Predicted Value of Decreasing 1 Kitchen Above Grade", '$'+subtract_KitchenAbvGr_price,
-                         delta=subtract_KitchenAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
+                        delta=subtract_KitchenAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
 
             col_7, col_8 = st.columns(2)
 
@@ -455,9 +464,9 @@ def main():
                 subtract_BedroomAbvGr, price)
 
             col_7.metric("Predicted Value of Adding 1 Bedroom Above Grade", '$'+add_BedroomAbvGr_price,
-                         delta=add_BedroomAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
+                        delta=add_BedroomAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
             col_8.metric("Predicted Value of Decreasing 1 Bedroom Above Grade", '$'+subtract_BedroomAbvGr_price,
-                         delta=subtract_BedroomAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
+                        delta=subtract_BedroomAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
 
             col_9, col_10 = st.columns(2)
 
@@ -467,20 +476,19 @@ def main():
                 subtract_BsmtFullBath, price)
 
             col_9.metric("Predicted Value of Adding 1 Basement Full Bath", '$'+add_BsmtFullBath_price,
-                         delta=add_BsmtFullBath_change, delta_color="normal", help=None, label_visibility="visible")
+                        delta=add_BsmtFullBath_change, delta_color="normal", help=None, label_visibility="visible")
             col_10.metric("Predicted Value of Decreasing 1 Basement Full Bath", '$'+subtract_BsmtFullBath_price,
-                          delta=subtract_BsmtFullBath_change, delta_color="normal", help=None, label_visibility="visible")
+                        delta=subtract_BsmtFullBath_change, delta_color="normal", help=None, label_visibility="visible")
 
+            # Display run time
             endTime = time.time()
-            modelRunTime = endTime - startTime
-            modelRunTime = round(modelRunTime, 2)
-
-            st.metric("Run Time:", str(modelRunTime) + ' seconds', delta=None, delta_color="off",
-                      help=None, label_visibility="visible")  # model run time
-
-
-# except:
-#     st.write('Must fill out all fields to predict the price.')
-
+            TotalRunTime = round(endTime - startTime, 3)
+            ModelRunTime = round(predictEndTime - startTime, 3)
+            
+            col_11, col_12 = st.columns(2)
+            col_11.metric("Total Run Time (including visualizations):", str(TotalRunTime) + ' seconds', delta=None, delta_color="off",
+                    help=None, label_visibility="visible")
+            col_12.metric("Run Time to predict price:", str(ModelRunTime) + ' seconds', delta=None, delta_color="off",
+                    help=None, label_visibility="visible")
 
 main()
