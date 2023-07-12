@@ -53,7 +53,7 @@ def main():
             'Select rating for overall material and finish quality:', min_value=1, max_value=10, step=1,value=8 )
 
         st.markdown(
-            "Press submit button below after inputting house data on the left to get the predicted house price!")
+            "Click the submit button below after inputting your house construction specifications on the left sidebar to get the predicted house price!")
         submit_button = st.form_submit_button(label='Submit')
 
         if submit_button:
@@ -122,9 +122,11 @@ def main():
             df = df.sort_values('AbsCoefficients', ascending=False)
 
             st.markdown(
-                "##### Scaled Impact of Features on Price Prediction")
+                "#### Impact of Features on Price Prediction")
+            st.markdown("The bar chart shows the importance of features to the house prediction price based on their coefficients. This provides a comprehensive overview of the features that significantly influence the pricing of construction projects.")
             # Bar chart with 'Features' on the x-axis and 'Coefficients' on the y-axis
-            st.bar_chart(df.set_index('Features')['Coefficients'])
+            # bar_chart = df.set_index('Features')['Coefficients']
+            st.bar_chart(data=df.set_index('Features')['Coefficients'])
 
             # Get the top 5 features
             top_5_features = df['Features'].values[:5]
@@ -133,7 +135,8 @@ def main():
             corr_matrix = raw_data[top_5_features].corr()
 
             st.markdown(
-                "##### Heatmap of Correlation Between Top 5 Features")
+                "#### Heatmap of Correlation Between 5 Most Significant Features")
+            st.markdown('The heatmap  offers a visual depiction of the connections between the top 5 most significant house features. By examining the strength and direction of these correlations, construction builders can discern the influential factors and make well-informed decisions.')
             # Create a heatmap of the correlation matrix
             plt.figure(figsize=(10, 8))
             sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
@@ -165,7 +168,10 @@ def main():
                     fig.delaxes(axes[j // ncols, j % ncols])
 
             st.markdown(
-                "##### Effect of top 10 Features on Sale Price")
+                "#### Effect of 10 Most Significant Features on Sale Price")
+            
+            st.markdown('These scatterplots allow us to understand how the 10 most significant house features, like number of bedrooms or overall quality, impacts the final house price. By studying these plots, we can easily spot strong relationships between features and price, as well as any outliers that might affect our predictions.')
+            
             plt.tight_layout()
             st.pyplot(fig)
 
@@ -420,6 +426,8 @@ def main():
             }
 
             # Predict all metrics based on the above sample data
+            st.markdown("#### Feature Variation Metrics for 5 Most Significant Features")
+            st.markdown("Our feature variation metrics offer developers tangible insights into how altering the 5 most significant property features, such as garage car capacity, influences the predicted house price. For example, by showcasing how an addition or subtraction of 1 garage car capacity could affect the house's value, developers can better strategize their building plans.")
             col_1, col_2 = st.columns(2)
 
             add_OverallQual_price, add_OverallQual_change = create_metric(
@@ -485,6 +493,7 @@ def main():
             TotalRunTime = round(endTime - startTime, 3)
             ModelRunTime = round(predictEndTime - startTime, 3)
             
+            st.markdown('### Run Time')
             col_11, col_12 = st.columns(2)
             col_11.metric("Total Run Time (including visualizations):", str(TotalRunTime) + ' seconds', delta=None, delta_color="off",
                     help=None, label_visibility="visible")
