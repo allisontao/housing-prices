@@ -17,41 +17,41 @@ def main():
         YearRemodAdd = st.sidebar.number_input('Year of remodel date (if it has not been remodeled, enter the year of original construction):', min_value=YearBuilt,
                                                max_value=2023, value=YearBuilt, step=1, help='This value should be greater than or equal to the original construction year')
         YrSold = st.sidebar.number_input(
-            'Year the house was sold:', min_value=1500, max_value=2023, value=2010, step=1)
+            'Year the house was sold:', min_value=1500, max_value=2023, value=YearBuilt + 5, step=1)
         MoSold = st.sidebar.selectbox(
             'Select month sold (1 corresponds to January and 12 corresponds to December, etc):', (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12))
         MSSubClass = st.sidebar.selectbox(
             'Building class:', (20, 30, 40, 45, 50, 60, 70, 75, 80, 85,  90, 120, 150, 160, 180, 190))
         GrLivArea = st.sidebar.number_input(
-            'Ground living area in square feet:', min_value=0)
+            'Ground living area in square feet:', min_value=0, value = 2000)
         MasVnrArea = st.sidebar.number_input(
-            'Masonry veneer area in square feet:', min_value=0)
+            'Masonry veneer area in square feet:', min_value=0, value = 500)
         PoolArea = st.sidebar.number_input(
-            'Pool area in square feet:', min_value=0)
+            'Pool area in square feet:', min_value=0, value = 1000)
         TotRmsAbvGrd = st.sidebar.number_input(
-            'Total rooms above ground (not including bathrooms):', step=1, min_value=0)
+            'Total rooms above ground (not including bathrooms):', step=1, min_value=0, value = 8)
         BedroomAbvGr = st.sidebar.number_input(
-            'Number of bedrooms above ground:', step=1, min_value=0)
+            'Number of bedrooms above ground:', step=1, min_value=0, value = 4)
         KitchenAbvGr = st.sidebar.number_input(
-            'Number of kitchens above ground:', step=1, min_value=0)
+            'Number of kitchens above ground:', step=1, min_value=0, value = 1)
         Fireplaces = st.sidebar.number_input(
-            'Number of fireplaces:', step=1, min_value=0)
+            'Number of fireplaces:', step=1, min_value=0, value =2)
         BsmtFullBath = st.sidebar.number_input(
-            'Number of full bathrooms in the basement:', step=1, min_value=0)
+            'Number of full bathrooms in the basement:', step=1, min_value=0, value =2)
         FullBath = st.sidebar.number_input(
-            'Number of full bathrooms above ground:', step=1, min_value=0)
+            'Number of full bathrooms above ground:', step=1, min_value=0, value = 3)
         HalfBath = st.sidebar.number_input(
-            'Number of half baths above ground:', step=1, min_value=0)
+            'Number of half baths above ground:', step=1, min_value=0, value =1)
         BsmtHalfBath = st.sidebar.number_input(
-            'Select the number of half bathrooms in the basement:', step=1)
+            'Select the number of half bathrooms in the basement:', step=1, value =0)
         ScreenPorch = st.sidebar.number_input(
-            'Screen porch area in square feet:', min_value=0)
+            'Screen porch area in square feet:', min_value=0, value = 500)
         GarageCars = st.sidebar.number_input(
-            'Size of garage in car capacity:', step=1, min_value=0)
+            'Size of garage in car capacity:', step=1, min_value=0, value =2)
         OverallCond = st.sidebar.slider(
-            'Select overall condition rating:', min_value=1, max_value=10, step=1)
+            'Select overall condition rating:', min_value=1, max_value=10, step=1, value =8)
         OverallQual = st.sidebar.slider(
-            'Select rating for overall material and finish quality:', min_value=1, max_value=10, step=1)
+            'Select rating for overall material and finish quality:', min_value=1, max_value=10, step=1,value=8 )
 
         st.markdown(
             "Press submit button below after inputting house data on the left to get the predicted house price!")
@@ -84,7 +84,7 @@ def main():
 
             data = pd.DataFrame(user_data, index=[0])
             model = pickle.load(open('model.sav', 'rb'))
-            raw_data = pickle.load(open('df.pkl', 'rb'))
+            raw_data = pd.read_csv('raw_data.csv')
             # try:
             startTime = time.time()
             price = model.predict(data)
@@ -94,7 +94,7 @@ def main():
             col1.metric("Predicted house price:", '$'+formatted_price, delta=None, delta_color="off",
                         help=None, label_visibility="visible")
 
-            col2.metric("Prediction Accuracy", "83.78%", delta=None, delta_color="off",
+            col2.metric("Prediction Accuracy", "85.05%", delta=None, delta_color="off",
                         help=None, label_visibility="visible")  # hard coded accuracy
 
             modelCoefficients = model.coef_
@@ -405,7 +405,7 @@ def main():
 
             col_3.metric("Predicted Value of Adding Garage Car Capacity by 1", add_GarageCars_price,
                          delta=add_GarageCars_change, delta_color="normal", help=None, label_visibility="visible")
-            col_4.metric("Predicted Decrease in Value Decreasing Garage Car Capacity by 1", subtract_GarageCars_price,
+            col_4.metric("Predicted Value of Decreasing Garage Car Capacity by 1", subtract_GarageCars_price,
                          delta=subtract_GarageCars_change, delta_color="normal", help=None, label_visibility="visible")
 
             col_5, col_6 = st.columns(2)
@@ -417,7 +417,7 @@ def main():
 
             col_5.metric("Predicted Value of Adding 1 Kitchen Above Grade", add_KitchenAbvGr_price,
                          delta=add_KitchenAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
-            col_6.metric("Predicted Decrease in Value of Decreasing 1 Kitchen Above Grade", subtract_KitchenAbvGr_price,
+            col_6.metric("Predicted Value of Decreasing 1 Kitchen Above Grade", subtract_KitchenAbvGr_price,
                          delta=subtract_KitchenAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
 
             col_7, col_8 = st.columns(2)
@@ -429,7 +429,7 @@ def main():
 
             col_7.metric("Predicted Value of Adding 1 Bedroom Above Grade", add_BedroomAbvGr_price,
                          delta=add_BedroomAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
-            col_8.metric("Predicted Decrease in Value in Decreasing Bedrooms Above Grade by 1", subtract_BedroomAbvGr_price,
+            col_8.metric("Predicted Value of Decreasing 1 Bedroom Above Grade", subtract_BedroomAbvGr_price,
                          delta=subtract_BedroomAbvGr_change, delta_color="normal", help=None, label_visibility="visible")
 
             col_9, col_10 = st.columns(2)
@@ -441,7 +441,7 @@ def main():
 
             col_9.metric("Predicted Value of Adding 1 Basement Full Bath", add_BsmtFullBath_price,
                          delta=add_BsmtFullBath_change, delta_color="normal", help=None, label_visibility="visible")
-            col_10.metric("Predicted Decrease in Value of Decreasing Basement Full Baths by 1", subtract_BsmtFullBath_price,
+            col_10.metric("Predicted Value of Decreasing 1 Basement Full Bath", subtract_BsmtFullBath_price,
                           delta=subtract_BsmtFullBath_change, delta_color="normal", help=None, label_visibility="visible")
 
             endTime = time.time()
